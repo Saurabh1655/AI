@@ -1,1 +1,639 @@
 All PRoject of ai 
+pract 1
+import random
+class VacuumEnvironment:
+  def __init__(self):
+    self.location_status = {
+        "A": random.choice([True, False]),
+        "B": random.choice([True, False]),
+    }
+    self.agent_location = "A"
+    self.performance_score = 0
+  def get_percept(self):
+    return self.agent_location, self.location_status[self.agent_location]
+  def execute_action(self, action):
+    location, is_dirty = self.get_percept()
+    if action == "Suck":
+      if is_dirty:
+        self.location_status[location] = False
+        self.performance_score += 100
+        print(f"Action: SUCK in {location}. Cleaned.")
+      else:
+        self.performance_score -= 1
+        print(f"Action: SUCK in {location}. Already clean.")
+    elif action == "MoveRight" and location == "A":
+      self.agent_location = "B"
+      self.performance_score -= 1
+      print("Action: MOVE RIGHT to B.")
+    elif action == "MoveLeft" and location == "B":
+      self.agent_location = "A"
+      self.performance_score -= 1
+      print("Action: MOVE LEFT to A.")
+  def get_state(self):
+    return self.location_status
+def simple_reflex_agent(percept):
+  location, is_dirty = percept
+  if is_dirty:
+    return "Suck"
+  elif location == "A":
+    return "MoveRight"
+  elif location == "B":
+    return "MoveLeft"
+env = VacuumEnvironment()
+for step in range(4):
+  print(f"Step {step + 1}: State={env.get_state()}")
+  action = simple_reflex_agent(env.get_percept())
+  env.execute_action(action)
+print(f"Final Score: {env.performance_score}")
+
+pract 2
+from collections import deque
+romania_map = {
+    "Arad": ["Zerind", "Sibiu", "Timisoara"],
+    "Zerind": ["Arad", "Oradea"],
+    "Oradea": ["Zerind", "Sibiu"],
+    "Sibiu": ["Arad", "Oradea", "Fagaras", "Rimnicu Vilcea"],
+    "Timisoara": ["Arad", "Lugoj"],
+    "Lugoj": ["Timisoara", "Mehadia"],
+    "Mehadia": ["Lugoj", "Drobeta"],
+    "Drobeta": ["Mehadia", "Craiova"],
+    "Craiova": ["Drobeta", "Rimnicu Vilcea", "Pitesti"],
+    "Rimnicu Vilcea": ["Sibiu", "Craiova", "Pitesti"],
+    "Fagaras": ["Sibiu", "Bucharest"],
+    "Pitesti": ["Rimnicu Vilcea", "Craiova", "Bucharest"],
+    "Bucharest": ["Fagaras", "Pitesti", "Giurgiu", "Urziceni"],
+    "Giurgiu": ["Bucharest"],
+    "Urziceni": ["Bucharest", "Hirsova", "Vaslui"],
+    "Hirsova": ["Urziceni", "Eforie"],
+    "Eforie": ["Hirsova"],
+    "Vaslui": ["Urziceni", "Iasi"],
+    "Iasi": ["Vaslui", "Neamt"],
+    "Neamt": ["Iasi"],
+}
+def bfs(graph, start, goal):
+  visited = set()
+  queue = deque([[start]])
+  while queue:
+    path = queue.popleft()
+    node = path[-1]
+    if node == goal:
+      return path
+    if node not in visited:
+      visited.add(node)
+      for neighbor in graph[node]:
+        if neighbor not in visited:
+          new_path = list(path)
+          new_path.append(neighbor)
+          queue.append(new_path)
+  return None
+start = "Arad"
+goal = "Bucharest"
+path = bfs(romania_map, start, goal)
+if path:
+  print("Path found:")
+  print(" -> ".join(path))
+else:
+  print("No path found.")
+
+
+pract 3
+
+romania_map = {
+    "Arad": [("Zerind", 75), ("Sibiu", 140), ("Timisoara", 118)],
+    "Zerind": [("Arad", 75), ("Oradea", 71)],
+    "Oradea": [("Zerind", 71), ("Sibiu", 151)],
+    "Sibiu": [
+        ("Arad", 140),
+        ("Oradea", 151),
+        ("Fagaras", 99),
+        ("Rimnicu Vilcea", 80),
+    ],
+    "Timisoara": [("Arad", 118), ("Lugoj", 111)],
+    "Lugoj": [("Timisoara", 111), ("Mehadia", 70)],
+    "Mehadia": [("Lugoj", 70), ("Drobeta", 75)],
+    "Drobeta": [("Mehadia", 75), ("Craiova", 120)],
+    "Craiova": [("Drobeta", 120), ("Rimnicu Vilcea", 146), ("Pitesti", 138)],
+    "Rimnicu Vilcea": [("Sibiu", 80), ("Craiova", 146), ("Pitesti", 97)],
+    "Fagaras": [("Sibiu", 99), ("Bucharest", 211)],
+    "Pitesti": [("Rimnicu Vilcea", 97), ("Craiova", 138), ("Bucharest", 101)],
+    "Bucharest": [
+        ("Fagaras", 211),
+        ("Pitesti", 101),
+        ("Giurgiu", 90),
+        ("Urziceni", 85),
+    ],
+    "Giurgiu": [("Bucharest", 90)],
+    "Urziceni": [("Bucharest", 85), ("Vaslui", 142), ("Hirsova", 98)],
+    "Hirsova": [("Urziceni", 98), ("Eforie", 86)],
+    "Eforie": [("Hirsova", 86)],
+    "Vaslui": [("Urziceni", 142), ("Iasi", 92)],
+    "Iasi": [("Vaslui", 92), ("Neamt", 87)],
+    "Neamt": [("Iasi", 87)],
+}
+def depth_limited_search(current, goal, limit, path, visited):
+  if current == goal:
+    return path
+  if limit <= 0:
+    return None
+  if current in romania_map:
+    for neighbor, cost in romania_map[current]:
+      if neighbor not in visited:
+        visited.add(neighbor)
+        new_path = path + [(neighbor, cost)]
+        result = depth_limited_search(neighbor, goal, limit - 1, new_path, visited)
+        if result is not None:
+          return result
+        visited.remove(neighbor)
+  return None
+def iterative_deepening_dfs(start, goal, max_depth):
+  for depth in range(max_depth + 1):
+    visited = {start}
+    result = depth_limited_search(start, goal, depth, [(start, 0)], visited)
+    if result is not None:
+      return result
+  return None
+start_city = "Arad"
+goal_city = "Bucharest"
+max_limit = 10
+path = iterative_deepening_dfs(start_city, goal_city, max_limit)
+print("Path found:", path)
+
+
+pract 4
+import heapq
+def uniform_cost_search(graph, start, goal):
+  priority_queue = [(0, start, [])]
+  visited = {}
+  while priority_queue:
+    cost, node, path = heapq.heappop(priority_queue)
+    if node in visited and visited[node] <= cost:
+      continue
+    visited[node] = cost
+    path = path + [node]
+    if node == goal:
+      return path, cost
+    for neighbor, weight in graph.get(node, []):
+      heapq.heappush(priority_queue, (cost + weight, neighbor, path))
+  return None, float("inf")
+graph = {
+    "A": [("B", 2), ("C", 4)],
+    "B": [("D", 3), ("E", 5)],
+    "C": [("F", 2)],
+    "D": [("G", 4)],
+    "E": [("G", 1)],
+    "F": [("G", 3)],
+    "G": [],
+}
+start = "A"
+goal = "G"
+path, cost = uniform_cost_search(graph, start, goal)
+print("Optimal Path:", path)
+print("Minimum Cost:", cost)
+
+
+
+Pract 5 
+
+# =========================================================
+# A* SEARCH ALGORITHM - ROMANIAN MAP PROBLEM
+# =========================================================
+
+import heapq
+# 1. Define the Romanian Map (Graph with distances)
+graph = {
+    "Arad": {"Zerind": 75, "Sibiu": 140, "Timisoara": 118},
+    "Zerind": {"Arad": 75, "Oradea": 71},
+    "Oradea": {"Zerind": 71, "Sibiu": 151},
+    "Sibiu": {
+        "Arad": 140,
+        "Oradea": 151,
+        "Fagaras": 99,
+        "Rimnicu Vilcea": 80,
+    },
+    "Timisoara": {"Arad": 118, "Lugoj": 111},
+    "Lugoj": {"Timisoara": 111, "Mehadia": 70},
+    "Mehadia": {"Lugoj": 70, "Drobeta": 75},
+    "Drobeta": {"Mehadia": 75, "Craiova": 120},
+    "Craiova": {"Drobeta": 120, "Rimnicu Vilcea": 146, "Pitesti": 138},
+    "Rimnicu Vilcea": {"Sibiu": 80, "Craiova": 146, "Pitesti": 97},
+    "Fagaras": {"Sibiu": 99, "Bucharest": 211},
+    "Pitesti": {"Rimnicu Vilcea": 97, "Craiova": 138, "Bucharest": 101},
+    "Bucharest": {
+        "Fagaras": 211,
+        "Pitesti": 101,
+        "Giurgiu": 90,
+        "Urziceni": 85,
+    },
+    "Giurgiu": {"Bucharest": 90},
+    "Urziceni": {"Bucharest": 85, "Hirsova": 98, "Vaslui": 142},
+    "Hirsova": {"Urziceni": 98, "Eforie": 86},
+    "Eforie": {"Hirsova": 86},
+    "Vaslui": {"Urziceni": 142, "Iasi": 92},
+    "Iasi": {"Vaslui": 92, "Neamt": 87},
+    "Neamt": {"Iasi": 87},
+}
+# 2. Define Heuristic Values (straight-line distance to Bucharest)
+heuristic = {
+    "Arad": 366,
+    "Bucharest": 0,
+    "Craiova": 160,
+    "Drobeta": 242,
+    "Eforie": 161,
+    "Fagaras": 176,
+    "Giurgiu": 77,
+    "Hirsova": 151,
+    "Iasi": 226,
+    "Lugoj": 244,
+    "Mehadia": 241,
+    "Neamt": 234,
+    "Oradea": 380,
+    "Pitesti": 100,
+    "Rimnicu Vilcea": 193,
+    "Sibiu": 253,
+    "Timisoara": 329,
+    "Urziceni": 80,
+    "Vaslui": 199,
+    "Zerind": 374,
+}
+# 3. A* Search Algorithm Function
+def a_star(graph, heuristic, start, goal):
+  # Open list stores tuples of (f_cost, current_node)
+  open_list = []
+  heapq.heappush(open_list, (0 + heuristic[start], start))
+  # g_cost stores the shortest known distance from start to each node
+  g_cost = {start: 0}
+  # Parent dictionary for path reconstruction
+  parent = {start: None}
+  # Closed set to store already explored nodes
+  closed = set()
+  while open_list:
+    f, current = heapq.heappop(open_list)
+    # If goal is reached, reconstruct the path
+    if current == goal:
+      path = []
+      while current:
+        path.append(current)
+        current = parent[current]
+      path.reverse()
+      return path, g_cost[goal]
+    # Ignore already processed nodes
+    if current in closed:
+      continue
+    closed.add(current)
+    # Explore neighbors
+    for neighbor, weight in graph[current].items():
+      tentative_g = g_cost[current] + weight
+      # If a shorter path to neighbor is found or neighbor not visited yet
+      if neighbor not in g_cost or tentative_g < g_cost[neighbor]:
+        g_cost[neighbor] = tentative_g
+        f_cost = tentative_g + heuristic[neighbor]
+        parent[neighbor] = current
+        heapq.heappush(open_list, (f_cost, neighbor))
+  return None, float("inf")
+# 4. Execute the Algorithm
+start_city = "Arad"
+goal_city = "Bucharest"
+path, total_cost = a_star(graph, heuristic, start_city, goal_city)
+print("=" * 50)
+print(f"Start City: {start_city}")
+print(f"Goal City: {goal_city}")
+print("=" * 50)
+print("Optimal Path:", " -> ".join(path))
+print("Total Path Cost (Distance):", total_cost, "km")
+print("=" * 50)
+
+
+
+
+pract 6
+# Objective Function
+def objective_function(x):
+    return -(x - 3) ** 2 + 9
+
+# Hill Climbing Algorithm
+def hill_climbing(start, step_size, max_iterations):
+    current = start
+    current_value = objective_function(current)
+
+    print(f"Initial Position = {current}")
+    print(f"Initial Value = {current_value}")
+    print("-" * 40)
+
+    for i in range(max_iterations):
+        # Generate neighbors
+        left = current - step_size
+        right = current + step_size
+
+        # Evaluate neighbors
+        left_value = objective_function(left)
+        right_value = objective_function(right)
+
+        print(f"Iteration {i+1}")
+        print(f"Current Position = {current}, Value = {current_value}")
+        print(f"Left Neighbor = {left}, Value = {left_value}")
+        print(f"Right Neighbor = {right}, Value = {right_value}")
+
+        # Move to better neighbor
+        if left_value > current_value:
+            current, current_value = left, left_value
+            print("Move Left")
+        elif right_value > current_value:
+            current, current_value = right, right_value
+            print("Move Right")
+        else:
+            print("No Better Neighbor Found")
+            print("Stopping Search...")
+            break
+
+        print("-" * 40)
+
+    return current, current_value
+
+# Main Program
+best_position, best_value = hill_climbing(
+    start=0,
+    step_size=1,
+    max_iterations=20
+)
+print(f"\nBest Position = {best_position}")
+print(f"Maximum Value = {best_value}")
+
+
+
+pract 7
+ Implement the Minimax algorithm for a two-player game (e.g., Tic-Tac-Toe) 
+and  demonstrate how optimal decisions are made.
+
+import math
+
+def win(b):
+    w = [
+        (0,1,2), (3,4,5), (6,7,8),
+        (0,3,6), (1,4,7), (2,5,8),
+        (0,4,8), (2,4,6)
+    ]
+    for a, c, d in w:
+        if b[a] == b[c] == b[d] and b[a] != " ":
+            return b[a]
+    return None
+
+def minimax(b, max_player):
+    result = win(b)
+    if result == "O":
+        return 1
+    if result == "X":
+        return -1
+    if " " not in b:
+        return 0
+
+    if max_player:  # AI turn
+        best = -math.inf
+        for i in range(9):
+            if b[i] == " ":
+                b[i] = "O"
+                score = minimax(b, False)
+                b[i] = " "
+                best = max(best, score)
+        return best
+    else:  # Human turn
+        best = math.inf
+        for i in range(9):
+            if b[i] == " ":
+                b[i] = "X"
+                score = minimax(b, True)
+                b[i] = " "
+                best = min(best, score)
+        return best
+
+def best_move(b):
+    best = -math.inf
+    move = 0
+    for i in range(9):
+        if b[i] == " ":
+            b[i] = "O"
+            score = minimax(b, False)
+            b[i] = " "
+            if score > best:
+                best = score
+                move = i
+    return move
+
+def show(b):
+    print(b[0], "|", b[1], "|", b[2])
+    print("--+---+--")
+    print(b[3], "|", b[4], "|", b[5])
+    print("--+---+--")
+    print(b[6], "|", b[7], "|", b[8])
+
+# Main Game Loop
+b = [" "] * 9
+while True:
+    show(b)
+    p = int(input("Enter position (0-8): "))
+    if b[p] != " ":
+        print("Position already occupied!")
+        continue
+    b[p] = "X"
+
+    if win(b) == "X":
+        show(b)
+        print("You Win!")
+        break
+
+    if " " not in b:
+        show(b)
+        print("Draw!")
+        break
+
+    m = best_move(b)
+    b[m] = "O"
+    print("AI chooses:", m)
+
+    if win(b) == "O":
+        show(b)
+        print("AI Wins!")
+        break
+
+
+pract 8
+
+# =========================================================
+# HIDDEN MARKOV MODEL (HMM) - STATE ESTIMATION
+# =========================================================
+
+import matplotlib.pyplot as plt
+
+# 1. Define the hidden states of the student
+states = ["Studying", "Playing"]
+
+# 2. Define the initial state probabilities
+initial = {"Studying": 0.6, "Playing": 0.4}
+# 60% chance of Studying and 40% chance of Playing
+
+# 3. Define transition probabilities
+trans = {
+    "Studying": {"Studying": 0.8, "Playing": 0.2},
+    "Playing": {"Studying": 0.3, "Playing": 0.7},
+}
+
+# 4. Define emission probabilities
+emit = {
+    "Studying": {"Low": 0.9, "High": 0.1},
+    "Playing": {"Low": 0.2, "High": 0.8},
+}
+
+# 5. Observations received for 3 days
+obs = ["Low", "High", "High"]
+
+
+def viterbi(obs_sequence):
+  """Finds the most likely sequence of hidden states using the Viterbi algorithm."""
+  prob = [{}]
+  path = {}
+
+  # Initialize base cases (t = 0)
+  for s in states:
+    prob[0][s] = initial[s] * emit[s][obs_sequence[0]]
+    path[s] = [s]
+
+  # Run Viterbi for t > 0
+  for t in range(1, len(obs_sequence)):
+    prob.append({})
+    new_path = {}
+
+    for s in states:
+      # Find the previous state with the highest probability
+      p, prev = max(
+          (prob[t - 1][p] * trans[p][s], p) for p in states
+      )
+      # Calculate probability for the current state
+      prob[t][s] = p * emit[s][obs_sequence[t]]
+      new_path[s] = path[prev] + [s]
+
+    path = new_path
+
+  # Find the final state with the highest probability
+  final_state = max(states, key=lambda s: prob[-1][s])
+  return path[final_state], prob[-1][final_state]
+
+
+# Run the Viterbi algorithm
+result, probability = viterbi(obs)
+
+# Display the results
+print("Observations:", obs)
+print("Predicted states:", result)
+print("Probability:", probability)
+
+for i in range(len(obs)):
+  print(f"Day {i+1} : {obs} === {result[i]}")
+
+# =========================================================
+# GRAPH VISUALIZATION
+# =========================================================
+
+# Map string states to numeric values for plotting (Studying = 1, Playing = 0)
+state_mapping = {"Studying": 1, "Playing": 0}
+numeric_result = [state_mapping[state] for state in result]
+
+plt.figure(figsize=(6, 4))
+plt.plot([1, 2, 3], numeric_result, marker="o", linestyle="-", color="b")
+plt.yticks([0, 1], ["Playing", "Strong/Playing (0)", "Studying (1)"])  # Adjust labels if needed
+plt.title("HMM State Estimation")
+plt.xlabel("Day")
+plt.ylabel("Hidden State")
+plt.grid(True)
+plt.show()
+
+
+
+
+pract 9 
+
+Aim: Aim: Write a program to implement the Expectation-Maximization (EM) 
+algorithm for learning with hidden variables.
+
+import numpy as np
+X = np.array([10, 11, 12, 20, 21, 22], dtype=float)
+k = 2
+means = np.array([11.0, 21.0])
+variances = np.array([1.0, 1.0])
+weights = np.array([0.5, 0.5])
+def gaussian(x, mean, variance):
+    return (1 / np.sqrt(2 * np.pi * variance)) * np.exp(-((x - mean) ** 2) / (2 * variance))
+for iteration in range(10):
+    responsibilities = np.zeros((len(X), k))
+    for i in range(len(X)):
+        for j in range(k):
+            responsibilities[i, j] = weights[j] * gaussian(X[i], means[j], variances[j])
+        responsibilities[i] /= np.sum(responsibilities[i])
+    Nk = np.sum(responsibilities, axis=0)
+    means = np.sum(responsibilities * X[:, np.newaxis], axis=0) / Nk
+    variances = np.sum(responsibilities * (X[:, np.newaxis] - means) ** 2, axis=0) / Nk
+    weights = Nk / len(X)
+    print("\nIteration:", iteration + 1)
+    print("Means:", means)
+    print("Variances:", variances)
+    print("Weights:", weights)
+print("\nFinal Responsibilities:")
+print(responsibilities)
+print("\nFinal Means:")
+print(means)
+print("\nFinal Variances:")
+print(variances)
+print("\nFinal Weights:")
+print(weights)
+
+
+prat 10
+
+Aim: Write a program to implement forward chaining and backward chaining 
+in a rule based system.
+
+facts = {"bird"}
+rules = [
+    ({"bird"}, "animal"),
+    ({"animal"}, "living_thing"),
+    ({"living_thing"}, "needs_food")
+]
+def forward_chaining(facts, rules, goal):
+    facts = set(facts)
+    print("\n--- Forward Chaining ---")
+    print("Initial Facts:", facts)
+    while True:
+        new_fact = False
+        for conditions, conclusion in rules:
+            if conditions.issubset(facts):
+                if conclusion not in facts:
+                    facts.add(conclusion)
+                    print("Derived:", conclusion)
+                    new_fact = True
+                if conclusion == goal:
+                    print("Goal reached:", goal)
+                    return True
+        if not new_fact:
+            break
+    print("Goal cannot be reached.")
+    return False
+def backward_chaining(goal, facts, rules):
+    print("\nTrying to prove:", goal)
+    if goal in facts:
+        print("Fact found:", goal)
+        return True
+    for conditions, conclusion in rules:
+        if conclusion == goal:
+            for condition in conditions:
+                if not backward_chaining(condition, facts, rules):
+                    return False
+            print("Proved:", goal)
+            return True
+    return False
+goal = "needs_food"
+# Forward Chaining
+forward_chaining(facts, rules, goal)
+# Backward Chaining
+print("\n--- Backward Chaining ---")
+if backward_chaining(goal, facts, rules):
+    print("Goal reached:", goal)
+else:
+    print("Goal cannot be proved.")
