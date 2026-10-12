@@ -46,7 +46,7 @@ for step in range(4):
   env.execute_action(action)
 print(f"Final Score: {env.performance_score}")
 
-pract 2
+pract 2 bfs algo Romanian map
 from collections import deque
 romania_map = {
     "Arad": ["Zerind", "Sibiu", "Timisoara"],
@@ -96,7 +96,7 @@ else:
   print("No path found.")
 
 
-pract 3
+pract 3 Dfs Romanian map 
 
 romania_map = {
     "Arad": [("Zerind", 75), ("Sibiu", 140), ("Timisoara", 118)],
@@ -159,7 +159,7 @@ path = iterative_deepening_dfs(start_city, goal_city, max_limit)
 print("Path found:", path)
 
 
-pract 4
+pract 4 Ucs uniform cost search 
 import heapq
 def uniform_cost_search(graph, start, goal):
   priority_queue = [(0, start, [])]
@@ -192,7 +192,7 @@ print("Minimum Cost:", cost)
 
 
 
-Pract 5 
+Pract 5 A*
 
 # =========================================================
 # A* SEARCH ALGORITHM - ROMANIAN MAP PROBLEM
@@ -305,7 +305,7 @@ print("=" * 50)
 
 
 
-pract 6
+pract 6 Hill climbing 
 # Objective Function
 def objective_function(x):
     return -(x - 3) ** 2 + 9
@@ -360,7 +360,7 @@ print(f"Maximum Value = {best_value}")
 
 
 
-pract 7
+pract 7 tic tak toe
  Implement the Minimax algorithm for a two-player game (e.g., Tic-Tac-Toe) 
 and  demonstrate how optimal decisions are made.
 
@@ -455,7 +455,7 @@ while True:
         break
 
 
-pract 8
+pract 8 Hmm 
 
 # =========================================================
 # HIDDEN MARKOV MODEL (HMM) - STATE ESTIMATION
@@ -548,7 +548,7 @@ plt.show()
 
 
 
-pract 9 
+pract 9 expecting maximization EM
 
 Aim: Aim: Write a program to implement the Expectation-Maximization (EM) 
 algorithm for learning with hidden variables.
@@ -585,7 +585,7 @@ print("\nFinal Weights:")
 print(weights)
 
 
-prat 10
+prat 10  FORWARD AND BACKWARD Chaing 
 
 Aim: Write a program to implement forward chaining and backward chaining 
 in a rule based system.
